@@ -1,0 +1,114 @@
+<html>
+
+<title>Chrome TTS v0.1</title>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/docs/4.0/assets/img/favicons/favicon.ico">
+
+    <title>ChromeでTTS v0.1</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/starter-template/">
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <link href="https://tasklog.jp/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" type="text/css">
+
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+
+    <!--jQuery-->
+    <script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+
+    <!-- Bootstrap -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+    <script>
+        function checkBrowserSupport()
+        {
+            if ('speechSynthesis' in window) {
+                alert("このブラウザは音声合成に対応しています。🎉");
+            } else {
+                alert("このブラウザは音声合成に対応していません。😭");
+            }
+        }
+    </script>
+</head>
+<body>
+    <p>
+        <select id="voice-select" class="form-control"></select>
+    </p>
+    
+    <p>
+        <textarea id="text" class="form-control" rows="5">再生する内容</textarea>
+    </p>
+
+    <div class="text-right">
+        <button class="btn btn-info btn-lg" id="checkbrowsersupport" onclick="checkBrowserSupport();">ブラウザ対応Check</button>    
+        <button class="btn btn-primary btn-lg" id="speak-btn">再生</button>        
+    </div>
+    
+</body>
+
+<script>
+    const text        = document.querySelector('#text')
+    const voiceSelect = document.querySelector('#voice-select')
+    const speakBtn    = document.querySelector('#speak-btn')
+
+    var defaultoption = null;
+    // selectタグの中身を声の名前が入ったoptionタグで埋める
+    function appendVoices() 
+    {
+        // ①　使える声の配列を取得
+        // 配列の中身は SpeechSynthesisVoice オブジェクト
+        const voices = speechSynthesis.getVoices()
+        voiceSelect.innerHTML = ''
+        voices.forEach(voice => 
+        { 
+            //　アロー関数 (ES6)
+            // 日本語と英語以外の声は選択肢に追加しない。
+            if(!voice.lang.match('ja|en-US')) return
+            const option = document.createElement('option')
+            option.value = voice.name
+            option.text  = `${voice.name} (${voice.lang})` //　テンプレートリテラル (ES6)
+            option.setAttribute('selected', voice.default)
+            voiceSelect.appendChild(option)
+        });
+
+        // 
+        // Google日本語がデフォルト選択されるようにしたもの．かっこ悪いのでなんとかしたい
+        //
+        if(document.getElementById("voice-select").options.length > 0)
+        {
+            document.getElementById("voice-select").options[1].selected = true;
+        }
+    }
+
+    appendVoices();
+
+    // ② 使える声が追加されたときに着火するイベントハンドラ。
+    // Chrome は非同期に(一個ずつ)声を読み込むため必要。
+    speechSynthesis.onvoiceschanged = e => {
+        appendVoices()
+    }
+
+    speakBtn.addEventListener('click', function() {
+        // 発言を作成
+        const uttr = new SpeechSynthesisUtterance(text.value)
+        // ③ 選択された声を指定
+        uttr.voice = speechSynthesis
+            .getVoices()
+            .filter(voice => voice.name === voiceSelect.value)[0]
+        // 発言を再生 (発言キュー発言に追加)
+        speechSynthesis.speak(uttr)
+    })
+</script>
+
+</html>
